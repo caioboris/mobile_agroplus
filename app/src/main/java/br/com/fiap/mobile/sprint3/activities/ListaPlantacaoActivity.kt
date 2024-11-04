@@ -1,6 +1,8 @@
 package br.com.fiap.mobile.sprint3.activities
 
 import android.app.Activity
+import android.content.Context
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
@@ -19,6 +21,7 @@ import java.io.IOException
 class ListaPlantacaoActivity : Activity() {
     private val client = OkHttpClient()
     private val gson = Gson()
+    private lateinit var sharedPreferences: SharedPreferences
 
     val URLBASE = "https://mobile-cboris-default-rtdb.firebaseio.com"
 
@@ -26,9 +29,19 @@ class ListaPlantacaoActivity : Activity() {
         super.onCreate(bundle)
         setContentView(R.layout.listagem_plantacoes)
 
+        sharedPreferences = getSharedPreferences("PlantacaoPrefs", Context.MODE_PRIVATE)
+
         val getCnpj = findViewById<EditText>(R.id.getCnpj)
         val getRegiao = findViewById<EditText>(R.id.getRegiao)
         val getTipoCultivo = findViewById<EditText>(R.id.getCultivo)
+
+        val savedCnpj = sharedPreferences.getString("CNPJ", "")
+        val savedRegiao = sharedPreferences.getString("Regiao", "")
+        val savedTipoCultivo = sharedPreferences.getString("Cultivo", "")
+
+        getCnpj.setText(savedCnpj)
+        getRegiao.setText(savedRegiao)
+        getTipoCultivo.setText(savedTipoCultivo)
 
         val request = Request.Builder()
             .url("${URLBASE}/plantacoes.json")
@@ -54,6 +67,13 @@ class ListaPlantacaoActivity : Activity() {
                             getCnpj.setText(plantacao.cnpj)
                             getRegiao.setText(plantacao.regiao)
                             getTipoCultivo.setText(plantacao.cultivo)
+
+                            sharedPreferences.edit().apply {
+                                putString("CNPJ", plantacao.cnpj)
+                                putString("Regiao", plantacao.regiao)
+                                putString("Cultivo", plantacao.cultivo)
+                                apply()
+                            }
                         }
                     }
                 }
